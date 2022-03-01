@@ -7,7 +7,7 @@ contract DEX {
   mapping(address => mapping(address => address)) public getPairs;
   address[] public pairs;
 
-  function addLP (string memory _name, string memory _symbol, address _tokenA, address _tokenB) external {
+  function addLP (string memory _name, string memory _symbol, address _tokenA, address _tokenB) external returns (address) {
     require(_tokenA != _tokenB, "invalid token pair");
     require(_tokenA != address(0), "tokenA address invalid");
     require(_tokenB != address(0), "tokenB address invalid");
@@ -18,5 +18,7 @@ contract DEX {
     getPairs[_tokenA][_tokenB] = liquidityPool;
     getPairs[_tokenB][_tokenA] = liquidityPool;
     pairs.push(liquidityPool);
+
+    return liquidityPool;
   }
 }
