@@ -8,8 +8,9 @@ contract LP is ERC20 {
   //public variables
   address public addressTokenA;
   address public addressTokenB;
-  uint public lockedTokenA = 0;
-  uint public lockedTokenB = 0;
+  int public lockedTokenA = 0;
+  int public lockedTokenB = 0;
+  int public fee = 10000;
 
   //initiating new ERC20 token: liquidity token
   constructor (
@@ -22,7 +23,39 @@ contract LP is ERC20 {
     addressTokenB = _addressTokenB;
   }
 
-  function addLiquidity (uint _amountTokenA, uint _amountTokenB) external {
+  function swap(address account, int _amountTokenA, int _amountTokenB) external {
+    require(_amountTokenA < lockedTokenA, "amount TokenA too large");
+    require(_amountTokenB < lockedTokenB, "amount TokenB too large");
+    ERC20 tokenA = ERC20(addressTokenA);
+    ERC20 tokenB = ERC20(addressTokenB);
+
+    if (_amountTokenA == 0) {
+      require(_amountTokenB > 0, "amount TokenB invalid");
+      _amountTokenA = lockedTokenA - ((lockedTokenA * lockedTokenB) / (lockedTokenB + _amountTokenB));
+      _amountTokenA = _amountTokenA - _amountTokenA / fee;
+      require(tokenB.transferFrom(account, address(this), uint(_amountTokenB)), "transfer TokenB failed"); //approval
+      require(tokenA.transfer(account, uint(abs(_amountTokenA))));
+
+      lockedTokenA = lockedTokenA - _amountTokenA;
+      lockedTokenB = lockedTokenB + _amountTokenB;
+    } 
+    else if (_amountTokenB == 0) {
+      require(_amountTokenA > 0, "amount TokenA invalid");
+      _amountTokenB = lockedTokenB - ((lockedTokenA * lockedTokenB) / (lockedTokenA + _amountTokenA));
+      _amountTokenB = _amountTokenB - _amountTokenB / fee;
+      require(tokenA.transferFrom(account, address(this), uint(_amountTokenA)), "transfer TokenA failed"); //approval
+      require(tokenB.transfer(account, uint(abs(_amountTokenB))));
+
+      lockedTokenA = lockedTokenA + _amountTokenA;
+      lockedTokenB = lockedTokenB - _amountTokenB;
+    } else {
+      revert("amounts invalid");
+    }
+
+    //TODO distribute fees
+  }
+
+  function addLiquidity (int _amountTokenA, int _amountTokenB) external {
     require(_amountTokenA > 0, "Amount tokenA invalid");
     require(_amountTokenB > 0, "Amount tokenB invalid");
 
@@ -33,8 +66,8 @@ contract LP is ERC20 {
 
     ERC20 tokenA = ERC20(addressTokenA);
     ERC20 tokenB = ERC20(addressTokenB);
-    require(tokenA.transferFrom(msg.sender, address(this), _amountTokenA), "transfer tokenA failed"); //approval
-    require(tokenB.transferFrom(msg.sender, address(this), _amountTokenB), "transfer tokenB failed"); //approval
+    require(tokenA.transferFrom(msg.sender, address(this), uint(_amountTokenA)), "transfer tokenA failed"); //approval
+    require(tokenB.transferFrom(msg.sender, address(this), uint(_amountTokenB)), "transfer tokenB failed"); //approval
 
     lockedTokenA = lockedTokenA + _amountTokenA;
     lockedTokenB = lockedTokenB + _amountTokenB;
@@ -42,30 +75,30 @@ contract LP is ERC20 {
     //calculate LPT amount
     uint liquidity;
     if (_totalSupply > 0) {
-      liquidity = Math.min(_amountTokenA * _totalSupply / lockedTokenA, _amountTokenB * _totalSupply / lockedTokenB);
+      liquidity = Math.min(uint(_amountTokenA) * _totalSupply / uint(lockedTokenA), uint(_amountTokenB) * _totalSupply / uint(lockedTokenB));
     } else {
-      liquidity = sqrt(_amountTokenA * _amountTokenB);
+      liquidity = sqrt(uint(_amountTokenA) * uint(_amountTokenB));
     }
     _mint(msg.sender, liquidity);
   }
 
-  function removeLiquidity (address account, uint _amountLPT) external {
+  function removeLiquidity (address account, int _amountLPT) external {
     require(_amountLPT > 0, "Amount tokenA invalid");
-    require(_amountLPT <= this.balanceOf(account));
+    require(_amountLPT <= int(this.balanceOf(account)));
 
-    uint _totalSupply = this.totalSupply();
-    uint256 _amountTokenA = (lockedTokenA * _amountLPT) / _totalSupply;
-    uint256 _amountTokenB = (lockedTokenB * _amountLPT) / _totalSupply;
+    int _totalSupply = int(this.totalSupply());
+    int256 _amountTokenA = (lockedTokenA * _amountLPT) / _totalSupply;
+    int256 _amountTokenB = (lockedTokenB * _amountLPT) / _totalSupply;
 
     ERC20 tokenA = ERC20(addressTokenA);
     ERC20 tokenB = ERC20(addressTokenB);
-    require(tokenA.transfer(account, _amountTokenA), "transfer tokenA failed");
-    require(tokenB.transfer(account, _amountTokenB), "transfer tokenB failed");
+    require(tokenA.transfer(account, uint(_amountTokenA)), "transfer tokenA failed");
+    require(tokenB.transfer(account, uint(_amountTokenB)), "transfer tokenB failed");
 
     lockedTokenA = lockedTokenA - _amountTokenA;
     lockedTokenB = lockedTokenB - _amountTokenB;
 
-    _burn(account, _amountLPT); //approval
+    _burn(account, uint(_amountLPT)); //approval
   }
 
   function sqrt(uint x) private pure returns (uint y) {
@@ -75,5 +108,9 @@ contract LP is ERC20 {
       y = z;
       z = (x / z + z) / 2;
     }
+  }
+
+  function abs(int x) private pure returns (int y) {
+    return x >= 0 ? x : -x;
   }
 }

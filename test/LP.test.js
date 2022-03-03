@@ -48,6 +48,7 @@ contract("LP constructor", () => {
   })
 })
 
+/*
 contract("Liquidity", (accounts) => {
   let amountA1 = ethers.BigNumber.from("100" + "000000000000000000")
   let amountB1 = ethers.BigNumber.from("10" + "000000000000000000")
@@ -107,5 +108,46 @@ contract("Liquidity", (accounts) => {
     TokenB = Number(ethers.utils.formatUnits(TokenB.toString(), decimals))
     assert(iTokenA < TokenA)
     assert(iTokenB < TokenB)
+  })
+})
+*/
+
+contract("Swap", (accounts) => {
+  it("Add liquidity", async () => {
+    let amountA = ethers.BigNumber.from("1000" + "000000000000000000")
+    let amountB = ethers.BigNumber.from("100" + "000000000000000000")
+    await natrium.approve(lp.address, amountA, { from: accounts[0] })
+    await oxygen.approve(lp.address, amountB, { from: accounts[0] })
+    await lp.addLiquidity(amountA, amountB)
+    const _lockedTokenA = await lp.lockedTokenA()
+    assert(_lockedTokenA.toString() == amountA.toString())
+  })
+
+  it("SwapA", async () => {
+    const iBalanceA = await natrium.balanceOf(accounts[0])
+    const iBalanceB = await oxygen.balanceOf(accounts[0])
+    let amountA = ethers.BigNumber.from("100" + "000000000000000000")
+    let amountB = ethers.BigNumber.from("0")
+    await natrium.approve(lp.address, amountA, { from: accounts[0] })
+    await lp.swap(accounts[0], amountA, amountB)
+
+    const balanceA = await natrium.balanceOf(accounts[0])
+    const balanceB = await oxygen.balanceOf(accounts[0])
+    assert(iBalanceA > balanceA)
+    assert(iBalanceB < balanceB)
+  })
+
+  it("SwapB", async () => {
+    const iBalanceA = await natrium.balanceOf(accounts[0])
+    const iBalanceB = await oxygen.balanceOf(accounts[0])
+    let amountA = ethers.BigNumber.from("0")
+    let amountB = ethers.BigNumber.from("10" + "000000000000000000")
+    await oxygen.approve(lp.address, amountB, { from: accounts[0] })
+    await lp.swap(accounts[0], amountA, amountB)
+
+    const balanceA = await natrium.balanceOf(accounts[0])
+    const balanceB = await oxygen.balanceOf(accounts[0])
+    assert(iBalanceA < balanceA)
+    assert(iBalanceB > balanceB)
   })
 })
