@@ -1,3 +1,12 @@
+.gradient-bg {
+  background: rgb(139, 209, 240);
+  background: linear-gradient(
+    180deg,
+    rgba(139, 209, 240, 1) 0%,
+    rgba(255, 255, 255, 1) 100%
+  );
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
