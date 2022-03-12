@@ -4,7 +4,7 @@ import logo from "../images/logo.png"
 
 const buttonStyle = "mx-3 py-2 px-5 bg-[#f7f7f7] text-gray-700 text-lg rounded-xl drop-shadow-lg hover:text-slate-900"
 
-const Header = ({ connectWallet, address, chainId, splitAddress, balance, roundBalance }) => {
+const Header = ({ connectWallet, address, chainId, splitAddress, balance, roundBalance, setPage }) => {
 
   const renderConnection = () => {
     if(address === null) {
@@ -39,8 +39,10 @@ const Header = ({ connectWallet, address, chainId, splitAddress, balance, roundB
     <div className="flex justify-between items-center p-4">
       <div className="flex items-center w-1/3">
         <img src={logo} className="w-12"/>
-        <a className={`cursor-pointer text-xl text-gray-600 font-semibold ml-8 ${buttonStyle}`}>Swap</a>
-        <a className={`cursor-pointer text-xl text-gray-600 font-semibold ml-2 ${buttonStyle}`}>Pool</a>
+        <a onClick={() => setPage(true)} className={`cursor-pointer text-xl text-gray-600 font-semibold ml-8 ${buttonStyle}`}
+        >Swap</a>
+        <a onClick={() => setPage(false)} className={`cursor-pointer text-xl text-gray-600 font-semibold ml-2 ${buttonStyle}`}
+        >Pool</a>
       </div>
       <div className="flex w-1/3 justify-end">
          {renderConnection()}
