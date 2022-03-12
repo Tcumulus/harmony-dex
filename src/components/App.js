@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { ethers } from "ethers"
 
 import Swap from "./Swap"
+import Pool from "./Pool"
 import Header from "./Header"
 
 function App() {
@@ -11,6 +12,8 @@ function App() {
   const [chainId, setChainId] = useState(null)
   const [signer, setSigner] = useState(null)
   const [balance, setBalance] = useState(null)
+
+  const [page, setPage] = useState(true)
 
   const connectWallet = () => {
     if(window.ethereum) {
@@ -47,7 +50,7 @@ function App() {
 
   const roundBalance = (balance) => {
     if (balance) {
-      let _balance = Math.round(balance * 100) / 100 
+      let _balance = Math.round(balance * 1000) / 1000 
       _balance = ethers.utils.commify(_balance)
       _balance = _balance + " " + "ONE"
       return _balance
@@ -58,8 +61,12 @@ function App() {
   return (
     <div className="flex flex-col min-h-screen text-center gradient-bg">
       <Header connectWallet={connectWallet} address={address} chainId={chainId} splitAddress={splitAddress}
-              balance={balance} roundBalance={roundBalance}/>
-      <Swap roundBalance={roundBalance}/>
+              balance={balance} roundBalance={roundBalance} setPage={setPage}/>
+      { page ?
+      <Swap roundBalance={roundBalance}/> 
+      : <Pool />
+      }
+      
     </div>
   );
 }

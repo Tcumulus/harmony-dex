@@ -7,13 +7,15 @@ const buttonStyle = `mx-4 py-2 px-5 bg-[#3dbcf2] text-lg rounded-xl text-[#f7f7f
 
 const Swap = ({ roundBalance }) => {
   const bal2 = 102.39
-  const bal1 = 500.7
+  const bal1 = 9.981
   
   const [amountA, setAmountA] = useState("")
   const [amountB, setAmountB] = useState("")
+  const [fee, setFee] = useState(0)
 
   const onTokenAInputChange = (event) => {
     setAmountA(event.target.value)
+    setFee(event.target.value * 0.003)
   }
 
   const onTokenBInputChange = (event) => {
@@ -58,7 +60,7 @@ const Swap = ({ roundBalance }) => {
           <div className="flex flex-grow w-full justify-between items-center">
             <input id="amount" type="text" placeholder="0.0" step="0.001" 
               onChange={onTokenAInputChange} value={amountA}
-              className="w-full h-16 m-1 p-2 text-3xl text-gray-700 bg-[#f7f7f7] focus:outline-none"
+              className="w-full h-16 m-1 p-2 text-3xl font-semibold text-gray-700 bg-[#f7f7f7] focus:outline-none"
             />
             <button onClick={maxTokenAInput} type="button"
               className="py-1 px-2 bg-[#bbe2f2] text-[#3dbcf2] text-sm font-bold shadow-none rounded-lg"
@@ -82,7 +84,7 @@ const Swap = ({ roundBalance }) => {
           <div className="flex flex-grow w-full justify-between items-center">
           <input id="amount" type="text" placeholder="0.0" step="0.001" 
               onChange={onTokenBInputChange} value={amountB}
-              className="w-full h-16 m-1 p-2 text-3xl text-gray-700 bg-[#f7f7f7] focus:outline-none"
+              className="w-full h-16 m-1 p-2 text-3xl font-semibold text-gray-700 bg-[#f7f7f7] focus:outline-none"
             />
             <div onClick={onTokenBChange}
               className="flex flex-grow items-center py-1 px-2 pr-6 mx-2 hover:bg-gray-200 rounded-xl"
@@ -94,8 +96,8 @@ const Swap = ({ roundBalance }) => {
         </div>
 
         <div className="flex flex-grow w-full justify-between items-center">
-          <p className="mx-4 my-2 text-gray-600">Price</p>
-          <p className="mx-4 my-2 text-gray-600">0.8 ONE for 1 ROY</p>
+          <p className="mx-4 my-2 text-sm font-semibold text-gray-600">Price</p>
+          <p className="mx-4 my-2 text-sm font-semibold text-gray-600">0.8 ONE for 1 ROY</p>
         </div>
 
         <button onClick={onSwap} type="submit" className={`w-full shadow-none ${buttonStyle}`}>Swap</button>
@@ -109,7 +111,7 @@ const Swap = ({ roundBalance }) => {
           </div>
           <div className="flex justify-between mt-1 mb-3">
             <p className="mx-4 text-gray-600">Fee</p>
-            <p className="mx-4 font-semibold text-gray-600">0.03 ONE</p>
+            <p className="mx-4 font-semibold text-gray-600">{roundBalance(fee)}</p>
           </div>
         </div>
       : null }
