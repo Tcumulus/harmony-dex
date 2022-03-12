@@ -12,7 +12,7 @@ contract LP is ERC20 {
   uint public lockedTokenB = 0;
   uint16 public fee = 3333; //(1/3333) = 0.0003 = 0.3%
 
-  //liquidity provider addresses
+  //liquidity provider balances
   mapping(address => uint) balances;
   mapping(address => uint) fees;
   uint totalFees = 0;
@@ -64,8 +64,8 @@ contract LP is ERC20 {
       require(tokenA.transferFrom(account, address(this), _amountTokenA), "transfer TokenA failed"); //approval
       require(tokenB.transfer(account, _amountTokenB));
 
-      lockedTokenA -= _amountTokenA;
-      lockedTokenB += _amountTokenB;
+      lockedTokenA += _amountTokenA;
+      lockedTokenB -= _amountTokenB;
     } else {
       revert("amounts invalid");
     }
@@ -111,8 +111,9 @@ contract LP is ERC20 {
   }
 
   function removeLiquidity (address account, uint liquidity) external {
-    require(liquidity > 0, "Amount tokenA invalid");
-    require(liquidity <= this.balanceOf(account));
+    _update(account);
+    require(liquidity > 0, "Amount invalid");
+    require(liquidity <= balances[account], "Amount invalid");
 
     uint _totalSupply = this.totalSupply();
     uint _amountTokenA = (lockedTokenA * liquidity) / _totalSupply;
@@ -126,15 +127,17 @@ contract LP is ERC20 {
     lockedTokenA -= _amountTokenA;
     lockedTokenB -= _amountTokenB;
 
-    _update(account);
     _burn(account, liquidity); //approval
     balances[account] -= liquidity;
   }
 
-  function _update(address account) public {
+  function _update (address account) public {
     uint owedAmount = (totalFees - fees[account]) * balances[account] / this.totalSupply();
-    _mint(account, owedAmount);
-    fees[account] = totalFees;
+    if (owedAmount != 0) {
+      _mint(account, owedAmount);
+      balances[account] += owedAmount;
+      fees[account] = totalFees;
+    }
   }
 
   function sqrt(uint x) private pure returns (uint y) {

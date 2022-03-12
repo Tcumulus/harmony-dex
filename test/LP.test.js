@@ -55,7 +55,7 @@ contract("Liquidity", (accounts) => {
   it("Add liquidity #1", async () => {
     await natrium.approve(lp.address, amountA1, { from: accounts[0] })
     await oxygen.approve(lp.address, amountB1, { from: accounts[0] })
-    await lp.addLiquidity(amountA1, amountB1)
+    await lp.addLiquidity(accounts[0], amountA1, amountB1)
     const _lockedTokenA = await lp.lockedTokenA()
     assert(_lockedTokenA.toString() == amountA1.toString())
   })
@@ -72,7 +72,7 @@ contract("Liquidity", (accounts) => {
     amountA2 = ethers.utils.parseUnits(amountA2.toString(), decimals)
     await natrium.approve(lp.address, amountA2, { from: accounts[0] })
     await oxygen.approve(lp.address, amountB2, { from: accounts[0] })
-    await lp.addLiquidity(amountA2, amountB2)
+    await lp.addLiquidity(accounts[0], amountA2, amountB2)
     const _lockedTokenA = await lp.lockedTokenA()
     assert(_lockedTokenA.toString() == amountA2.add(amountA1))
   })
@@ -113,30 +113,33 @@ contract("Liquidity", (accounts) => {
 */
 
 contract("Swap", (accounts) => {
+  let iLptAmount;
   it("Add liquidity", async () => {
     let amountA = ethers.BigNumber.from("1000" + "000000000000000000")
-    let amountB = ethers.BigNumber.from("100" + "000000000000000000")
+    let amountB = ethers.BigNumber.from("1000" + "000000000000000000")
     await natrium.approve(lp.address, amountA, { from: accounts[0] })
     await oxygen.approve(lp.address, amountB, { from: accounts[0] })
-    await lp.addLiquidity(amountA, amountB)
+    await lp.addLiquidity(accounts[0], amountA, amountB)
     const _lockedTokenA = await lp.lockedTokenA()
+    iLptAmount = await lp.balanceOf(accounts[0])
     assert(_lockedTokenA.toString() == amountA.toString())
   })
 
   it("SwapA", async () => {
-    const iBalanceA = await natrium.balanceOf(accounts[0])
-    const iBalanceB = await oxygen.balanceOf(accounts[0])
+    const iBalanceA = await natrium.balanceOf(accounts[1])
+    const iBalanceB = await oxygen.balanceOf(accounts[1])
     let amountA = ethers.BigNumber.from("100" + "000000000000000000")
     let amountB = ethers.BigNumber.from("0")
-    await natrium.approve(lp.address, amountA, { from: accounts[0] })
-    await lp.swap(accounts[0], amountA, amountB)
+    await natrium.approve(lp.address, amountA, { from: accounts[1] })
+    await lp.swap(accounts[1], amountA, amountB)
 
-    const balanceA = await natrium.balanceOf(accounts[0])
-    const balanceB = await oxygen.balanceOf(accounts[0])
+    const balanceA = await natrium.balanceOf(accounts[1])
+    const balanceB = await oxygen.balanceOf(accounts[1])
     assert(iBalanceA > balanceA)
     assert(iBalanceB < balanceB)
   })
 
+  /*
   it("SwapB", async () => {
     const iBalanceA = await natrium.balanceOf(accounts[0])
     const iBalanceB = await oxygen.balanceOf(accounts[0])
@@ -149,5 +152,40 @@ contract("Swap", (accounts) => {
     const balanceB = await oxygen.balanceOf(accounts[0])
     assert(iBalanceA < balanceA)
     assert(iBalanceB > balanceB)
+  })
+  */
+
+  it("Update LPT amount", async () => {
+    await lp._update(accounts[0])
+    const LptAmount = await lp.balanceOf(accounts[0])
+    assert(LptAmount > iLptAmount)
+  })
+
+  it("Remove Liquidity", async () => {
+    const iBalanceA = await natrium.balanceOf(accounts[0])
+    const iBalanceB = await oxygen.balanceOf(accounts[0])
+    const LptAmount = await lp.balanceOf(accounts[0])
+
+    const ilpbalanceA = await natrium.balanceOf(lp.address)
+    const ilpbalanceB = await oxygen.balanceOf(lp.address)
+
+    await lp.approve(lp.address, LptAmount, { from: accounts[0] })
+    await lp.removeLiquidity(accounts[0], LptAmount)
+
+    const balanceA = await natrium.balanceOf(accounts[0])
+    const balanceB = await oxygen.balanceOf(accounts[0])
+    console.log(iBalanceA.toString())    
+    console.log(balanceA.toString())
+    console.log(iBalanceB.toString())
+    console.log(balanceB.toString())
+
+    const lpbalanceA = await natrium.balanceOf(lp.address)
+    const lpbalanceB = await oxygen.balanceOf(lp.address)
+    console.log(ilpbalanceA.toString())
+    console.log(lpbalanceA.toString())
+    console.log(ilpbalanceB.toString())
+    console.log(lpbalanceB.toString())
+    
+    assert(true == true)
   })
 })
