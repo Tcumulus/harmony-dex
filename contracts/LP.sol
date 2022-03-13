@@ -11,11 +11,16 @@ contract LP is ERC20 {
   uint public lockedTokenA = 0;
   uint public lockedTokenB = 0;
   uint16 public fee = 3333; //(1/3333) = 0.0003 = 0.3%
+  uint public totalFees = 0;
 
   //liquidity provider balances
   mapping(address => uint) balances;
   mapping(address => uint) fees;
-  uint totalFees = 0;
+
+  //events
+  event _addLiquidity(address indexed account, uint amountA, uint amountB);
+  event _removeLiquidity(address indexed account, uint amountA, uint amountB);
+  event _swap(address indexed account, address indexed base, uint amountA, uint amountB, uint feeLPT);
 
   //initializing new ERC20 token: liquidity token
   constructor (
@@ -29,6 +34,7 @@ contract LP is ERC20 {
   }
 
   function swap(address account, uint _amountTokenA, uint _amountTokenB) external {
+    address base;
     uint liquidity;
     uint feeA;
     uint feeB;
@@ -39,6 +45,8 @@ contract LP is ERC20 {
     //B -> A
     if (_amountTokenA == 0) {
       require(_amountTokenB > 0, "amount TokenB invalid");
+      base = addressTokenB;
+
       feeB = _amountTokenB / (fee * 2); //subtracting half of the fee of the B amount
       _amountTokenA = lockedTokenA - ((lockedTokenA * lockedTokenB) / (lockedTokenB + (_amountTokenB - feeB))); //calculate A for amount B with fees subtracted
       
@@ -55,10 +63,12 @@ contract LP is ERC20 {
     //A -> B
     else if (_amountTokenB == 0) {
       require(_amountTokenA > 0, "amount TokenA invalid");
-      feeA = _amountTokenA / (fee * 2); //subtracting half of the fee of the B amount
-      _amountTokenB = lockedTokenB - ((lockedTokenA * lockedTokenB) / (lockedTokenA + (_amountTokenA - feeA))); //calculate A for amount B with fees subtracted
+      base = addressTokenA;
 
-      feeB = lockedTokenA * feeA / lockedTokenB; //lockedTokenA / lockedTokenB = feeA / feeB
+      feeA = _amountTokenA / (fee * 2);
+      _amountTokenB = lockedTokenB - ((lockedTokenA * lockedTokenB) / (lockedTokenA + (_amountTokenA - feeA)));
+
+      feeB = lockedTokenA * feeA / lockedTokenB;
       _amountTokenB -= feeB;
 
       require(tokenA.transferFrom(account, address(this), _amountTokenA), "transfer TokenA failed"); //approval
@@ -72,6 +82,7 @@ contract LP is ERC20 {
 
     liquidity = Math.min(feeA * _totalSupply / lockedTokenA, feeB * _totalSupply / lockedTokenB);
     totalFees += liquidity;
+    emit _swap(account, base, _amountTokenA, _amountTokenB, liquidity);
   }
 
   function addLiquidity (address account, uint _amountTokenA, uint _amountTokenB) external {
@@ -108,6 +119,7 @@ contract LP is ERC20 {
       balances[account] = liquidity;
       fees[account] = totalFees;
     }
+    emit _addLiquidity(account, _amountTokenA, _amountTokenB);
   }
 
   function removeLiquidity (address account, uint liquidity) external {
@@ -129,6 +141,7 @@ contract LP is ERC20 {
 
     _burn(account, liquidity); //approval
     balances[account] -= liquidity;
+    emit _removeLiquidity(account, _amountTokenA, _amountTokenB);
   }
 
   function _update (address account) public {
