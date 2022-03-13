@@ -25,7 +25,7 @@ const Header = ({ connectWallet, address, chainId, splitAddress, balance, roundB
         <div className="flex items-top justify-end items-center">
           <img src={harmonyLogo} className={`w-12 px-3 py-3 ${buttonStyle}`}/>
           <button onClick={connectWallet} className={`cursor-pointer ${buttonStyle}`}>
-            {roundBalance(balance)}
+            {roundBalance(balance, "ONE")}
           </button>
           <a href={`https://explorer.pops.one/address/${address}`} target="_blank" rel="noopener noreferrer"
             className={`cursor-pointer ${buttonStyle}`}

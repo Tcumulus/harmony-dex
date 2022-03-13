@@ -7,3 +7,4 @@ const secondary = "#8bd1f0"
 
 const white = "#f7f7f7"
 const gray = "gray-600"
+const grayLight = "gray-300"
