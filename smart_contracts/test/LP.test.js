@@ -174,17 +174,9 @@ contract("Swap", (accounts) => {
 
     const balanceA = await natrium.balanceOf(accounts[0])
     const balanceB = await oxygen.balanceOf(accounts[0])
-    console.log(iBalanceA.toString())    
-    console.log(balanceA.toString())
-    console.log(iBalanceB.toString())
-    console.log(balanceB.toString())
 
     const lpbalanceA = await natrium.balanceOf(lp.address)
     const lpbalanceB = await oxygen.balanceOf(lp.address)
-    console.log(ilpbalanceA.toString())
-    console.log(lpbalanceA.toString())
-    console.log(ilpbalanceB.toString())
-    console.log(lpbalanceB.toString())
     
     assert(true == true)
   })
