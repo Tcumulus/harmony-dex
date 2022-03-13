@@ -1,0 +1,17 @@
+{
+  "files": {
+    "main.css": "/static/css/main.d9530cf8.css",
+    "main.js": "/static/js/main.87b8fc64.js",
+    "static/media/logo.png": "/static/media/logo.5b16cf802be6cc9d436b.png",
+    "static/media/arrowGray.png": "/static/media/arrowGray.81e0209648a479879901.png",
+    "static/media/arrow.png": "/static/media/arrow.e2347b37037a690025e0.png",
+    "static/media/harmony-one-logo.svg": "/static/media/harmony-one-logo.02c2e3bade8b31e4b6943850f5f55c2a.svg",
+    "index.html": "/index.html",
+    "main.d9530cf8.css.map": "/static/css/main.d9530cf8.css.map",
+    "main.87b8fc64.js.map": "/static/js/main.87b8fc64.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d9530cf8.css",
+    "static/js/main.87b8fc64.js"
+  ]
+}

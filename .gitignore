@@ -1,7 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+interface/node_modules
+smart_contracts/node_modules
 /.pnp
 .pnp.js
 
@@ -24,4 +25,4 @@ yarn-debug.log*
 yarn-error.log*
 
 # Local Netlify folder
-.netlify
+interface/.netlify
