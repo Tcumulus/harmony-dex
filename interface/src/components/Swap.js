@@ -1,14 +1,10 @@
 import React, { useState } from "react"
 import arrow from "../images/arrow.png"
 import arrowGray from "../images/arrowGray.png"
-
 import ChooseToken from "./ChooseToken"
 
-const buttonStyle = `mx-4 py-2 px-5 bg-[#3dbcf2] text-lg rounded-xl text-[#f7f7f7] drop-shadow-lg hover:bg-[#1cabe8] cursor-pointer`
-
-
 const Swap = ({ 
-  roundBalance, tokenA, tokenB, balanceA, balanceB, setTokenA, setTokenB, setBalanceA, setBalanceB 
+  roundBalance, tokenA, tokenB, balanceA, balanceB, setTokenA, setTokenB, setBalanceA, setBalanceB
 }) => {
 
   const [amountA, setAmountA] = useState("")
@@ -113,7 +109,9 @@ const Swap = ({
           <p className="mx-4 my-2 text-sm font-semibold text-gray-600">0.8 {tokenA} for 1 {tokenB}</p>
         </div>
 
-        <button onClick={onSwap} type="submit" className={`w-full mt-2 shadow-none h-14 ${buttonStyle}`}>Swap</button>
+        <button onClick={onSwap} type="submit" 
+          className={"w-full mt-2 shadow-none h-14 mx-4 py-2 px-5 bg-[#3dbcf2] text-lg rounded-xl text-[#f7f7f7] hover:bg-[#1cabe8] cursor-pointer"}
+        >Swap</button>
       </form>
 
       { amountA ? 
@@ -129,8 +127,8 @@ const Swap = ({
         </div>
       : null }
 
-      { chooseA ? <ChooseToken setChoose={setChooseA} />: null}
-      { chooseB ? <ChooseToken setChoose={setChooseB} />: null}
+      { chooseA ? <ChooseToken setChoose={setChooseA} roundBalance={roundBalance}/>: null}
+      { chooseB ? <ChooseToken setChoose={setChooseB} roundBalance={roundBalance}/>: null}
       
     </div>
   )

@@ -116,7 +116,7 @@ const CreatePool = ({ roundBalance, setCreatePool }) => {
         </button>
       </form>
 
-      { amountA ? 
+      { amountA && amountB ? 
         <div className="flex-col w-80 z-0 bg-white rounded-b-xl">
           <div className="flex justify-between my-4">
             <p className="mx-4 font-semibold text-gray-600">{ratioAB()}</p>
@@ -125,8 +125,8 @@ const CreatePool = ({ roundBalance, setCreatePool }) => {
         </div>
       : null }
 
-      { chooseA ? <ChooseToken setChoose={setChooseA} />: null}
-      { chooseB ? <ChooseToken setChoose={setChooseB} />: null}
+      { chooseA ? <ChooseToken setChoose={setChooseA} roundBalance={roundBalance} />: null}
+      { chooseB ? <ChooseToken setChoose={setChooseB} roundBalance={roundBalance} />: null}
       
     </div>
   )

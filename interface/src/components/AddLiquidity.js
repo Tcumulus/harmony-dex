@@ -130,8 +130,8 @@ const AddLiquidity = ({ roundBalance, setAddLiquidity}) => {
         </div>
       : null }
 
-      { chooseA ? <ChooseToken setChoose={setChooseA} />: null}
-      { chooseB ? <ChooseToken setChoose={setChooseB} />: null}
+      { chooseA ? <ChooseToken setChoose={setChooseA} roundBalance={roundBalance} />: null}
+      { chooseB ? <ChooseToken setChoose={setChooseB} roundBalance={roundBalance} />: null}
       
     </div>
   )

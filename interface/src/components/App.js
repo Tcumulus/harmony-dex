@@ -1,12 +1,13 @@
-import React, { useState } from "react"
+import React, { useState, createContext } from "react"
 import { ethers } from "ethers"
 
 import Swap from "./Swap"
 import Pool from "./Pool"
 import Header from "./Header"
 
-function App() {
+export const Context = createContext(null)
 
+function App() {
   const [address, setAddress] = useState(null)
   const [provider, setProvider] = useState(null)
   const [chainId, setChainId] = useState(null)
@@ -64,16 +65,17 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen gradient-bg">
-      <Header connectWallet={connectWallet} address={address} chainId={chainId} splitAddress={splitAddress}
-              balance={balance} roundBalance={roundBalance} setPage={setPage}/>
-      { page ?
-      <Swap roundBalance={roundBalance} tokenA={tokenA} tokenB={tokenB} balanceA={balanceA} balanceB={balanceB}
-            setTokenA={setTokenA} setTokenB={setTokenB} setBalanceA={setBalanceA} setBalanceB={setBalanceB} /> 
-      : <Pool roundBalance={roundBalance}/>
-      }
-      
-    </div>
+    <Context.Provider value={ {signer, address, balance} }>
+      <div className="flex flex-col min-h-screen gradient-bg">
+        <Header connectWallet={connectWallet} address={address} chainId={chainId} splitAddress={splitAddress}
+                balance={balance} roundBalance={roundBalance} setPage={setPage}/>
+        { page ?
+        <Swap roundBalance={roundBalance} tokenA={tokenA} tokenB={tokenB} balanceA={balanceA} balanceB={balanceB}
+              setTokenA={setTokenA} setTokenB={setTokenB} setBalanceA={setBalanceA} setBalanceB={setBalanceB}/> 
+        : <Pool roundBalance={roundBalance}/>
+        }
+      </div>
+    </Context.Provider>
   );
 }
 
