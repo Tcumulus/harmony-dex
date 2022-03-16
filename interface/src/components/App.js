@@ -14,11 +14,6 @@ function App() {
   const [signer, setSigner] = useState(null)
   const [balance, setBalance] = useState(null)
 
-  const [tokenA, setTokenA] = useState("ONE")
-  const [tokenB, setTokenB] = useState("ROY")
-  const [balanceA, setBalanceA] = useState(null)
-  const [balanceB, setBalanceB] = useState(202.1)
-
   const [page, setPage] = useState(true)
 
   const connectWallet = () => {
@@ -47,9 +42,6 @@ function App() {
     let _balance = await _provider.getBalance(_address)
     _balance = Number(ethers.utils.formatUnits(_balance, 18))
     setBalance(_balance)
-
-    //temporary
-    setBalanceA(_balance)
   }
 
   const splitAddress = (address) => {
@@ -70,8 +62,7 @@ function App() {
         <Header connectWallet={connectWallet} address={address} chainId={chainId} splitAddress={splitAddress}
                 balance={balance} roundBalance={roundBalance} setPage={setPage}/>
         { page ?
-        <Swap roundBalance={roundBalance} tokenA={tokenA} tokenB={tokenB} balanceA={balanceA} balanceB={balanceB}
-              setTokenA={setTokenA} setTokenB={setTokenB} setBalanceA={setBalanceA} setBalanceB={setBalanceB}/> 
+        <Swap roundBalance={roundBalance}/> 
         : <Pool roundBalance={roundBalance}/>
         }
       </div>

@@ -1,8 +1,8 @@
-import React, { useState, useContext } from "react"
+import React, { useState, useContext, useEffect } from "react"
 import { ethers } from "ethers"
 import { Context } from "./App"
 
-const Token = ({ token, roundBalance }) => {
+const Token = ({ token, roundBalance, setToken, setChoose, getBalance }) => {
   const ABI = [
     {
       "constant":true,
@@ -14,21 +14,18 @@ const Token = ({ token, roundBalance }) => {
   ]
 
   const { tokenAddress, symbol, decimals, name } = token
-  const { signer, address } = useContext(Context)
-  const [balance, setBalance] = useState("-")
- 
-  const getBalance = async () => {
-    if (signer) {
-      const tokenContract = new ethers.Contract(tokenAddress, ABI, signer)
-      let _balance = await tokenContract.balanceOf(address)
-      _balance = Number(ethers.utils.formatUnits(_balance, 18))
-      _balance = roundBalance(_balance, "")
-      setBalance(_balance)
-    }
-  }
-  getBalance()
+  const { signer, address, balance } = useContext(Context)
+  const [tokenBalance, setTokenBalance] = useState("-")
 
-  const addToken = async () =>{
+  useEffect(async () => {
+    if(signer) {
+      const _balance = await getBalance(token)
+      setTokenBalance(_balance)
+    }
+  }, [signer])
+
+  const addToken = async (event) =>{
+    event.stopPropagation()
     await window.ethereum.request({
       method: "wallet_watchAsset",
       params: {
@@ -41,18 +38,25 @@ const Token = ({ token, roundBalance }) => {
       },
     });
   }
+
+  const onSelectToken = () => {
+    setToken(token)
+    setChoose(false)
+  }
   
   return(
-    <div className="flex flex-grow justify-between items-center h-16 hover:bg-gray-200">
+    <div onClick={onSelectToken} className="flex flex-grow justify-between items-center h-16 hover:bg-gray-200 cursor-pointer">
       <div className="ml-6 flex flex-col">
         <div className="flex">
           <p className="text-lg font-semibold text-gray-600">{symbol}</p>
-          <button onClick={addToken} className="ml-4 text-lg text-gray-400">+</button>
+          {token.symbol !== "ONE" ? <button onClick={addToken} 
+            className="ml-4 w-6 h-6 text-sm text-gray-400 border border-gray-400 rounded-full hover:bg-gray-500 hover:text-[#f7f7f7] hover:border-gray-500"
+          >+</button> :null}
         </div>
         <p className="text-sm text-gray-600">{name}</p>
       </div>
       <div className="flex flex-grow justify-end mr-4">
-        <p className="text-sm text-gray-600">{balance}</p>
+        <p className="text-sm text-gray-600">{tokenBalance == "-" ? tokenBalance : roundBalance(tokenBalance, "")}</p>
       </div>
     </div>
   )

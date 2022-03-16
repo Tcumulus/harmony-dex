@@ -1,17 +1,54 @@
-import React, { useState } from "react"
+import React, { useState, useContext, useEffect } from "react"
+import { ethers } from "ethers"
 import arrow from "../images/arrow.png"
 import arrowGray from "../images/arrowGray.png"
+import arrowWhite from "../images/arrowWhite.png"
 import ChooseToken from "./ChooseToken"
+import { Context } from "./App"
 
-const Swap = ({ 
-  roundBalance, tokenA, tokenB, balanceA, balanceB, setTokenA, setTokenB, setBalanceA, setBalanceB
-}) => {
+const Swap = ({ roundBalance }) => {
+  const ABI = [
+    {
+      "constant":true,
+      "inputs":[{"name":"_owner","type":"address"}],
+      "name":"balanceOf",
+      "outputs":[{"name":"balance","type":"uint256"}],
+      "type":"function"
+    }
+  ]
 
   const [amountA, setAmountA] = useState("")
   const [amountB, setAmountB] = useState("")
   const [fee, setFee] = useState(0)
   const [chooseA, setChooseA] = useState(false)
   const [chooseB, setChooseB] = useState(false)
+
+  const [tokenA, setTokenA] = useState({symbol: "ONE", name: "Harmony", address: ""})
+  const [tokenB, setTokenB] = useState(null)
+  const [balanceA, setBalanceA] = useState(null)
+  const [balanceB, setBalanceB] = useState(null)
+
+  const { signer, address, balance } = useContext(Context)
+
+  useEffect(() => {
+    if (tokenA) {
+      getABBalance(tokenA, "A")
+    } if (tokenB) {
+      getABBalance(tokenB, "B")
+    }
+  })
+
+  useEffect(() => {
+    if (tokenA && signer) {
+      getABBalance(tokenA, "A")
+    }
+  }, [tokenA])
+
+  useEffect(() => {
+    if (tokenB && signer) {
+      getABBalance(tokenB, "B")
+    }
+  }, [tokenB])
 
   const onTokenAInputChange = (event) => {
     const val = event.target.value
@@ -45,6 +82,28 @@ const Swap = ({
     setAmountB(amountA)
   }
 
+  const getBalance = async (token) => {
+    let _balance
+    if (token.symbol == "ONE") {
+      _balance = balance
+    }
+    else {
+      const tokenContract = new ethers.Contract(token.tokenAddress, ABI, signer)
+      _balance = await tokenContract.balanceOf(address)
+      _balance = Number(ethers.utils.formatUnits(_balance, 18))
+    }
+    return _balance
+  }
+
+  const getABBalance = async (token, AB) => {
+    const _balance = await getBalance(token)
+    if (AB === "A") {
+      setBalanceA(_balance)
+    } else if (AB === "B") {
+      setBalanceB(_balance)
+    }
+  }
+
   const onSwap = () => {
     console.log("Swap")
   }
@@ -62,7 +121,7 @@ const Swap = ({
         <div className="flex-col flex-grow w-full justify-between items-center rounded-2xl border-2">
           <div className="flex flex-grow w-full justify-between">
             <p className="text-sm text-gray-600 ml-3 mt-2">From</p>
-            {balanceA ? <p className="text-sm text-gray-600 mr-3 mt-2">Balance: {roundBalance(balanceA, tokenA)}</p>
+            {balanceA ? <p className="text-sm text-gray-600 mr-3 mt-2">Balance: {roundBalance(balanceA, "")}</p>
             : null}
           </div>
           <div className="flex flex-grow w-full justify-between items-center">
@@ -73,12 +132,20 @@ const Swap = ({
             <button onClick={()=>setAmountA(balanceA)} type="button"
               className="py-1 px-2 bg-[#bbe2f2] text-[#3dbcf2] text-sm font-bold border border-[#bbe2f2] rounded-lg hover:border-[#1cabe8]"
             >MAX</button>
-            <div onClick={onTokenAChange}
-              className="flex flex-grow items-center py-1 px-2 pr-6 mx-2 hover:bg-gray-200 rounded-xl cursor-pointer"
-            >
-              <p className="py-1 px-2 text-gray-600 text-xl rounded-lg font-semibold">{tokenA}</p>
-              <img src={arrowGray} className="w-3 h-3"/>
-            </div>
+            { tokenA ?
+              <div onClick={onTokenAChange}
+                className="flex flex-grow items-center py-1 px-2 pr-6 mx-2 hover:bg-gray-200 rounded-xl cursor-pointer"
+              >
+                <p className="py-1 px-2 text-gray-600 text-xl rounded-lg font-semibold">{tokenA.symbol}</p>
+                <img src={arrowGray} className="w-3 h-3"/>
+              </div> :
+              <div onClick={onTokenAChange} 
+                className="flex flex-grow w-96 items-center justify-end py-1 px-2 pr-3 mx-2 bg-[#3dbcf2] hover:bg-[#1cabe8] rounded-xl cursor-pointer"
+              >
+                <p className="py-1 pr-2 text-[#f7f7f7] text-sm">select token</p>
+                <img src={arrowWhite} className="w-3 h-3"/>
+              </div>
+            }
           </div>
         </div>
 
@@ -87,7 +154,7 @@ const Swap = ({
         <div className="flex-col flex-grow w-full justify-between items-center rounded-2xl border-2">
           <div className="flex flex-grow w-full justify-between">
             <p className="text-sm text-gray-600 ml-3 mt-2">To</p>
-            {balanceB ? <p className="text-sm text-gray-600 mr-3 mt-2">Balance: {roundBalance(balanceB, tokenB)}</p>
+            {balanceB !== null ? <p className="text-sm text-gray-600 mr-3 mt-2">Balance: {roundBalance(balanceB, "")}</p>
             : null}
           </div>
           <div className="flex flex-grow w-full justify-between items-center">
@@ -95,18 +162,26 @@ const Swap = ({
               onChange={onTokenBInputChange} value={amountB}
               className="w-full h-16 m-1 p-2 text-3xl font-semibold text-gray-700 bg-[#f7f7f7] focus:outline-none"
             />
-            <div onClick={onTokenBChange}
-              className="flex flex-grow items-center py-1 px-2 pr-6 mx-2 hover:bg-gray-200 rounded-xl cursor-pointer"
-            >
-              <p className="py-1 px-2 text-gray-600 text-xl rounded-lg font-semibold">{tokenB}</p>
-              <img src={arrowGray} className="w-3 h-3"/>
-            </div>
+            { tokenB ?
+              <div onClick={onTokenBChange}
+                className="flex flex-grow items-center py-1 px-2 pr-6 mx-2 hover:bg-gray-200 rounded-xl cursor-pointer"
+              >
+                <p className="py-1 px-2 text-gray-600 text-xl rounded-lg font-semibold">{tokenB.symbol}</p>
+                <img src={arrowGray} className="w-3 h-3"/>
+              </div> :
+              <div onClick={onTokenBChange} 
+                className="flex flex-grow w-80 items-center justify-end py-1 px-2 pr-3 mx-2 bg-[#3dbcf2] hover:bg-[#1cabe8] rounded-xl cursor-pointer"
+              >
+                <p className="py-1 pr-2 text-[#f7f7f7] text-sm">select token</p>
+                <img src={arrowWhite} className="w-3 h-3"/>
+              </div>
+            }
           </div>
         </div>
 
         <div className="flex flex-grow w-full justify-between items-center">
           <p className="mx-4 my-2 text-sm font-semibold text-gray-600">Price</p>
-          <p className="mx-4 my-2 text-sm font-semibold text-gray-600">0.8 {tokenA} for 1 {tokenB}</p>
+          <p className="mx-4 my-2 text-sm font-semibold text-gray-600">0.8 {/*tokenA.symbol*/} for 1 {/*tokenB.symbol*/}</p>
         </div>
 
         <button onClick={onSwap} type="submit" 
@@ -127,8 +202,12 @@ const Swap = ({
         </div>
       : null }
 
-      { chooseA ? <ChooseToken setChoose={setChooseA} roundBalance={roundBalance}/>: null}
-      { chooseB ? <ChooseToken setChoose={setChooseB} roundBalance={roundBalance}/>: null}
+      { chooseA ? 
+        <ChooseToken setChoose={setChooseA} roundBalance={roundBalance} setToken={setTokenA} getBalance={getBalance}/>
+      : null}
+      { chooseB ? 
+        <ChooseToken setChoose={setChooseB} roundBalance={roundBalance} setToken={setTokenB} getBalance={getBalance}/>
+      : null}
       
     </div>
   )

@@ -1,13 +1,13 @@
-import React, { useContext, useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useCollectionData } from "react-firebase-hooks/firestore"
 import { firestore } from "../firebase/config"
-import { Context } from "./App"
 import Token from "./Token"
 
-const ChooseToken = ({ setChoose, roundBalance }) => {
-  const { balance } = useContext(Context)
-  const query = firestore.collection("tokens")
+const ChooseToken = ({ setChoose, roundBalance, setToken, getBalance }) => {
+  let query = firestore.collection("tokens")
+  query = query.orderBy("tokenAddress")
   const [tokens] = useCollectionData(query, {idField: "id"})
+  
   const [displayedTokens, setDisplayedTokens] = useState(null)
 
   useEffect(() => {
@@ -18,16 +18,16 @@ const ChooseToken = ({ setChoose, roundBalance }) => {
 
   const onInputChange = (event) => {
     const val = event.target.value
-    if (val.length != 0) {
+    if (val.length !== 0) {
       let _tokens = []
       tokens.forEach(token => {
-        if (val == token.tokenAddress) {
+        if (val === token.tokenAddress) {
           _tokens.push(token)
         }
-        else if (val.toLowerCase() == token.name.substring(0,val.length).toLowerCase()) {
+        else if (val.toLowerCase() === token.name.substring(0,val.length).toLowerCase()) {
           _tokens.push(token)
         }
-        else if (val.toLowerCase() == token.symbol.substring(0,val.length).toLowerCase()) {
+        else if (val.toLowerCase() === token.symbol.substring(0,val.length).toLowerCase()) {
           _tokens.push(token)
         }
       })
@@ -52,18 +52,9 @@ const ChooseToken = ({ setChoose, roundBalance }) => {
           />
           
           <div className="h-full mb-6 border overflow-y-auto">
-            <div className="flex flex-grow justify-between items-center h-16 hover:bg-gray-200">
-              <div className="ml-6 flex flex-col">
-                <p className="text-lg font-semibold text-gray-600">ONE</p>
-                <p className="text-sm text-gray-600">Harmony</p>
-              </div>
-              <div className="flex flex-grow justify-end mr-4">
-                <p className="text-sm text-gray-600">{roundBalance(balance, "")}</p>
-              </div>
-            </div>
-            <hr></hr>
             {displayedTokens && displayedTokens.map(token => 
-              <Token key={token.tokenAddress} token={token} roundBalance={roundBalance}/>
+              <Token key={token.tokenAddress} token={token} roundBalance={roundBalance} 
+                setToken={setToken} setChoose={setChoose} getBalance={getBalance}/>
             )}
           </div>
         </div>
