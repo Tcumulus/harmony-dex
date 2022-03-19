@@ -3,7 +3,7 @@ import { useCollectionData } from "react-firebase-hooks/firestore"
 import { firestore } from "../firebase/config"
 import Token from "./Token"
 
-const ChooseToken = ({ setChoose, roundBalance, setToken, getBalance }) => {
+const ChooseToken = ({ setChoose, roundBalance, setToken, getBalance, tokenA, tokenB }) => {
   let query = firestore.collection("tokens")
   query = query.orderBy("tokenAddress")
   const [tokens] = useCollectionData(query, {idField: "id"})
@@ -53,8 +53,8 @@ const ChooseToken = ({ setChoose, roundBalance, setToken, getBalance }) => {
           
           <div className="h-full mb-6 border overflow-y-auto">
             {displayedTokens && displayedTokens.map(token => 
-              <Token key={token.tokenAddress} token={token} roundBalance={roundBalance} 
-                setToken={setToken} setChoose={setChoose} getBalance={getBalance}/>
+              <Token key={token.tokenAddress} token={token} roundBalance={roundBalance} setToken={setToken}
+                setChoose={setChoose} getBalance={getBalance} tokenA={tokenA} tokenB={tokenB}/>
             )}
           </div>
         </div>

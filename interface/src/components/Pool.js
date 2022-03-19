@@ -3,7 +3,7 @@ import Liquidity from "./Liquidity"
 import AddLiquidity from "./AddLiquidity"
 import CreatePool from "./CreatePool"
 
-const Pool = ({ roundBalance }) => {
+const Pool = ({ roundBalance, chainId, connectWallet }) => {
   const [addLiquidity, setAddLiquidity] = useState(false)
   const [createPool, setCreatePool] = useState(false)
 
@@ -14,11 +14,13 @@ const Pool = ({ roundBalance }) => {
       }
 
       {addLiquidity ?
-        <AddLiquidity roundBalance={roundBalance} setAddLiquidity={setAddLiquidity}/> 
+        <AddLiquidity roundBalance={roundBalance} setAddLiquidity={setAddLiquidity} chainId={chainId}
+          connectWallet={connectWallet}/> 
       :null }
 
       {createPool ?
-        <CreatePool roundBalance={roundBalance} setCreatePool={setCreatePool}/>
+        <CreatePool roundBalance={roundBalance} setCreatePool={setCreatePool} chainId={chainId}
+          connectWallet={connectWallet}/>
       : null}
     </div>
   )

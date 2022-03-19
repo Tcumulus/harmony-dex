@@ -62,8 +62,8 @@ function App() {
         <Header connectWallet={connectWallet} address={address} chainId={chainId} splitAddress={splitAddress}
                 balance={balance} roundBalance={roundBalance} setPage={setPage}/>
         { page ?
-        <Swap roundBalance={roundBalance}/> 
-        : <Pool roundBalance={roundBalance}/>
+        <Swap roundBalance={roundBalance} chainId={chainId} connectWallet={connectWallet}/> 
+        : <Pool roundBalance={roundBalance} chainId={chainId} connectWallet={connectWallet}/>
         }
       </div>
     </Context.Provider>

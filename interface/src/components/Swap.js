@@ -5,35 +5,32 @@ import arrowGray from "../images/arrowGray.png"
 import arrowWhite from "../images/arrowWhite.png"
 import ChooseToken from "./ChooseToken"
 import { Context } from "./App"
+import { getBalanceABI } from "../abis"
 
-const Swap = ({ roundBalance }) => {
-  const ABI = [
-    {
-      "constant":true,
-      "inputs":[{"name":"_owner","type":"address"}],
-      "name":"balanceOf",
-      "outputs":[{"name":"balance","type":"uint256"}],
-      "type":"function"
-    }
-  ]
-
+const Swap = ({ roundBalance, chainId, connectWallet }) => {
   const [amountA, setAmountA] = useState("")
   const [amountB, setAmountB] = useState("")
-  const [fee, setFee] = useState(0)
   const [chooseA, setChooseA] = useState(false)
   const [chooseB, setChooseB] = useState(false)
 
-  const [tokenA, setTokenA] = useState({symbol: "ONE", name: "Harmony", address: ""})
+  const [tokenA, setTokenA] = useState({symbol: "ONE", name: "Harmony", tokenAddress: "", decimals: 18})
   const [tokenB, setTokenB] = useState(null)
   const [balanceA, setBalanceA] = useState(null)
   const [balanceB, setBalanceB] = useState(null)
 
+  const [fee, setFee] = useState(0)
+  const [priceImpact, setPriceImpact] = useState(0.01)
+
+  const [buttonText, setButtonText] = useState("Swap")
+  const [buttonStyle, setButtonStyle] = useState("cursor-pointer bg-[#3dbcf2] hover:bg-[#1cabe8] text-[#f7f7f7]")
+  const [available, setAvailable] = useState(0) //0: swap, 1: blocked, 2: connect wallet
+
   const { signer, address, balance } = useContext(Context)
 
   useEffect(() => {
-    if (tokenA) {
+    if (tokenA && signer) {
       getABBalance(tokenA, "A")
-    } if (tokenB) {
+    } if (tokenB && signer) {
       getABBalance(tokenB, "B")
     }
   })
@@ -50,6 +47,10 @@ const Swap = ({ roundBalance }) => {
     }
   }, [tokenB])
 
+  useEffect(() => {
+    check()
+  }, [chainId, tokenA, amountA, balanceA, tokenB, priceImpact])
+
   const onTokenAInputChange = (event) => {
     const val = event.target.value
     if (val >= 0) {
@@ -63,14 +64,6 @@ const Swap = ({ roundBalance }) => {
     if (val >= 0) {
       setAmountB(val)
     }
-  }
-
-  const onTokenAChange = () => {
-    setChooseA(true)
-  }
-
-  const onTokenBChange = () => {
-    setChooseB(true)
   }
 
   const onSwitchTokens = () => {
@@ -88,7 +81,7 @@ const Swap = ({ roundBalance }) => {
       _balance = balance
     }
     else {
-      const tokenContract = new ethers.Contract(token.tokenAddress, ABI, signer)
+      const tokenContract = new ethers.Contract(token.tokenAddress, getBalanceABI, signer)
       _balance = await tokenContract.balanceOf(address)
       _balance = Number(ethers.utils.formatUnits(_balance, 18))
     }
@@ -104,8 +97,53 @@ const Swap = ({ roundBalance }) => {
     }
   }
 
-  const onSwap = () => {
+  const check = () => {
+    const grayed = "cursor-default bg-gray-200 text-gray-500 text-[#f7f7f7]"
+    const warned = "cursor-pointer bg-red-500 hover:bg-red-600"
+    const normal = "cursor-pointer bg-[#3dbcf2] hover:bg-[#1cabe8] text-[#f7f7f7]"
+    if (!window.ethereum) {
+      setButtonStyle(grayed)
+      setButtonText("Connect Metamask")
+      setAvailable(1)
+    } else if (!chainId) {
+      setButtonStyle(normal)
+      setButtonText("Connect Wallet")
+      setAvailable(2)
+    } else if (chainId !== 1666700000) {
+      setButtonStyle(grayed)
+      setButtonText("Wrong network")
+      setAvailable(1)
+    } else if (!tokenA || !tokenB) {
+      setButtonStyle(grayed)
+      setButtonText("Select token")
+      setAvailable(1)
+    } else if (!amountA && amountA <= 0) {
+      setButtonStyle(grayed)
+      setButtonText("Enter amount")
+      setAvailable(1)
+    } else if (balanceA < amountA) {
+      setButtonStyle(grayed)
+      setButtonText("Insufficient " + tokenA.symbol + " balance")
+      setAvailable(1)
+    } else if (priceImpact > 0.05) {
+      setButtonStyle(warned)
+      setButtonText("Swap anyway")
+      setAvailable(0)
+    } else {
+      setButtonStyle(normal)
+      setButtonText("Swap")
+      setAvailable(0)
+    }
+  }
+
+  const onSwap = (event) => {
+    event.preventDefault()
     console.log("Swap")
+  }
+
+  const onConnectWallet = (event) => {
+    event.preventDefault()
+    connectWallet()
   }
 
   return(
@@ -121,7 +159,7 @@ const Swap = ({ roundBalance }) => {
         <div className="flex-col flex-grow w-full justify-between items-center rounded-2xl border-2">
           <div className="flex flex-grow w-full justify-between">
             <p className="text-sm text-gray-600 ml-3 mt-2">From</p>
-            {balanceA ? <p className="text-sm text-gray-600 mr-3 mt-2">Balance: {roundBalance(balanceA, "")}</p>
+            {balanceA !== null ? <p className="text-sm text-gray-600 mr-3 mt-2">Balance: {roundBalance(balanceA, "")}</p>
             : null}
           </div>
           <div className="flex flex-grow w-full justify-between items-center">
@@ -133,13 +171,13 @@ const Swap = ({ roundBalance }) => {
               className="py-1 px-2 bg-[#bbe2f2] text-[#3dbcf2] text-sm font-bold border border-[#bbe2f2] rounded-lg hover:border-[#1cabe8]"
             >MAX</button>
             { tokenA ?
-              <div onClick={onTokenAChange}
+              <div onClick={()=>setChooseA(true)}
                 className="flex flex-grow items-center py-1 px-2 pr-6 mx-2 hover:bg-gray-200 rounded-xl cursor-pointer"
               >
                 <p className="py-1 px-2 text-gray-600 text-xl rounded-lg font-semibold">{tokenA.symbol}</p>
                 <img src={arrowGray} className="w-3 h-3"/>
               </div> :
-              <div onClick={onTokenAChange} 
+              <div onClick={()=>setChooseA(true)} 
                 className="flex flex-grow w-96 items-center justify-end py-1 px-2 pr-3 mx-2 bg-[#3dbcf2] hover:bg-[#1cabe8] rounded-xl cursor-pointer"
               >
                 <p className="py-1 pr-2 text-[#f7f7f7] text-sm">select token</p>
@@ -163,13 +201,13 @@ const Swap = ({ roundBalance }) => {
               className="w-full h-16 m-1 p-2 text-3xl font-semibold text-gray-700 bg-[#f7f7f7] focus:outline-none"
             />
             { tokenB ?
-              <div onClick={onTokenBChange}
+              <div onClick={()=>setChooseB(true)}
                 className="flex flex-grow items-center py-1 px-2 pr-6 mx-2 hover:bg-gray-200 rounded-xl cursor-pointer"
               >
                 <p className="py-1 px-2 text-gray-600 text-xl rounded-lg font-semibold">{tokenB.symbol}</p>
                 <img src={arrowGray} className="w-3 h-3"/>
               </div> :
-              <div onClick={onTokenBChange} 
+              <div onClick={()=>setChooseB(true)} 
                 className="flex flex-grow w-80 items-center justify-end py-1 px-2 pr-3 mx-2 bg-[#3dbcf2] hover:bg-[#1cabe8] rounded-xl cursor-pointer"
               >
                 <p className="py-1 pr-2 text-[#f7f7f7] text-sm">select token</p>
@@ -181,32 +219,36 @@ const Swap = ({ roundBalance }) => {
 
         <div className="flex flex-grow w-full justify-between items-center">
           <p className="mx-4 my-2 text-sm font-semibold text-gray-600">Price</p>
-          <p className="mx-4 my-2 text-sm font-semibold text-gray-600">0.8 {/*tokenA.symbol*/} for 1 {/*tokenB.symbol*/}</p>
+          {tokenA && tokenB ?
+            <p className="mx-4 my-2 text-sm font-semibold text-gray-600">0.8 {tokenA.symbol}/{tokenB.symbol}</p>
+          : null}
         </div>
 
-        <button onClick={onSwap} type="submit" 
-          className={"w-full mt-2 shadow-none h-14 mx-4 py-2 px-5 bg-[#3dbcf2] text-lg rounded-xl text-[#f7f7f7] hover:bg-[#1cabe8] cursor-pointer"}
-        >Swap</button>
+        <button onClick={available === 0 ? onSwap : available === 2 ? onConnectWallet : (event)=>event.preventDefault()} 
+          type="submit" className={`w-full mt-2 shadow-none h-14 mx-4 py-2 px-5 text-lg rounded-xl ${buttonStyle}`}
+        >{buttonText}</button>
       </form>
 
       { amountA ? 
         <div className="flex-col w-80 z-0 bg-white rounded-b-xl">
           <div className="flex justify-between mt-4">
             <p className="mx-4 text-gray-600">Price Impact</p>
-            <p className="mx-4 font-semibold text-gray-600">0.10%</p>
+            <p className="mx-4 font-semibold text-gray-600">{priceImpact*100}%</p>
           </div>
           <div className="flex justify-between mt-1 mb-3">
             <p className="mx-4 text-gray-600">Fee</p>
-            <p className="mx-4 font-semibold text-gray-600">{roundBalance(fee, tokenA)}</p>
+            <p className="mx-4 font-semibold text-gray-600">{roundBalance(fee, tokenA.symbol)}</p>
           </div>
         </div>
       : null }
 
       { chooseA ? 
-        <ChooseToken setChoose={setChooseA} roundBalance={roundBalance} setToken={setTokenA} getBalance={getBalance}/>
+        <ChooseToken setChoose={setChooseA} roundBalance={roundBalance} setToken={setTokenA} getBalance={getBalance}
+          tokenA={tokenA} tokenB={tokenB}/>
       : null}
       { chooseB ? 
-        <ChooseToken setChoose={setChooseB} roundBalance={roundBalance} setToken={setTokenB} getBalance={getBalance}/>
+        <ChooseToken setChoose={setChooseB} roundBalance={roundBalance} setToken={setTokenB} getBalance={getBalance}
+          tokenA={tokenA} tokenB={tokenB}/>
       : null}
       
     </div>
