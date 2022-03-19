@@ -50,10 +50,20 @@ function App() {
   }
 
   const roundBalance = (balance, symbol) => {
-    let _balance = Math.round(balance * 1000) / 1000
-    _balance = ethers.utils.commify(_balance)
-    _balance = _balance + " " + symbol
-    return _balance
+    if(balance){
+      let _balance = balance
+      if (_balance >= 1000) {
+        _balance = Math.round(_balance)
+        _balance = balance.toPrecision(_balance.toString().length)
+      } else if (_balance < 0.00001) {
+        _balance = 0
+      } else {
+        _balance = balance.toPrecision(4)
+      }
+      _balance = ethers.utils.commify(_balance)
+      _balance = _balance + " " + symbol
+      return _balance
+    } return "- " + symbol
   }
 
   return (
