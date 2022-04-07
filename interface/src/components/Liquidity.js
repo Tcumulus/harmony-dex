@@ -1,6 +1,17 @@
-import React from "react"
+import React, { useContext } from "react"
+import { useCollectionData } from "react-firebase-hooks/firestore"
+import { firestore } from "../firebase/config"
 
-const Liquidity = ({ setAddLiquidity, setCreatePool }) => {
+import { Context } from "./App"
+import Pair from "./Pair"
+
+const Liquidity = ({ setAddLiquidity, setCreatePool, roundBalance }) => {
+  let { signer, address, balance } = useContext(Context)
+  address ? address=address : address = "noAddress"
+
+  let collection = firestore.collection("liquidity").doc(address).collection("pairs")
+  const [pairs] = useCollectionData(collection, {idField: "id"})
+
   return (
     <div className="flex flex-col flex-grow w-1/2 my-6 bg-[#f7f7f7] rounded-3xl shadow-lg">
       <div className="flex w-full justify-between">
@@ -14,8 +25,12 @@ const Liquidity = ({ setAddLiquidity, setCreatePool }) => {
           >Create Pool</button>
         </div>
       </div>
-      <div className="flex flex-grow m-4 justify-center border border-gray-300 rounded-2xl">
-        <p className="m-2 text-sm text-gray-600">No liquidity found</p>
+      <div className="flex flex-col flex-grow m-4 items-center border border-gray-300 rounded-2xl overflow-y-auto">
+        {pairs && pairs.length > 0 ? 
+          pairs.map(pair => <Pair pair={pair} setAddLiquidity={setAddLiquidity} roundBalance={roundBalance}/>)
+        :
+          <p className="m-2 text-sm text-gray-600">No liquidity found</p>
+        }
       </div>
     </div>
   )

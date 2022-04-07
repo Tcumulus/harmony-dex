@@ -49,7 +49,7 @@ function App() {
     return _address
   }
 
-  const roundBalance = (balance, symbol) => {
+  const roundBalance = (balance, symbol = "") => {
     if(balance){
       let _balance = balance
       if (_balance >= 1000) {

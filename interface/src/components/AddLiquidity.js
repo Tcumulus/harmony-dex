@@ -7,7 +7,7 @@ import ChooseToken from "./ChooseToken"
 import { Context } from "./App"
 import { getBalanceABI } from "../abis"
 
-const AddLiquidity = ({ roundBalance, setAddLiquidity, chainId, connectWallet }) => {
+const AddLiquidity = ({ roundBalance, setAddLiquidity, chainId, connectWallet, addToFirebase }) => {
   const [amountA, setAmountA] = useState("")
   const [amountB, setAmountB] = useState("")
   const [chooseA, setChooseA] = useState(false)
@@ -138,7 +138,14 @@ const AddLiquidity = ({ roundBalance, setAddLiquidity, chainId, connectWallet })
 
   const onAddLiquidity = (event) => {
     event.preventDefault()
-    console.log("Add Liquidity")
+
+    // @smartcontracts
+    // APPROVE
+    // ADD LIQUIDITY
+    // UPDATE
+
+    addToFirebase(tokenA, tokenB, amountA, amountB)
+    console.log("Added Liquidity")
   }
 
   const onConnectWallet = (event) => {
