@@ -126,13 +126,13 @@ const AddLiquidity = ({ roundBalance, setAddLiquidity, chainId, connectWallet, a
   }
 
   const ratioAB = () => {
-    if(amountA && amountA > 0 && amountB && amountB > 0) {
+    if(amountA && amountA > 0 && amountB && amountB > 0 && tokenA && tokenB) {
       return roundBalance(amountA/amountB, tokenA.symbol + "/" + tokenB.symbol)
     }
   }
 
   const ratioBA = () => {
-    if(amountA && amountA > 0 && amountB && amountB > 0) {
+    if(amountA && amountA > 0 && amountB && amountB > 0 && tokenA && tokenB) {
       return roundBalance(amountB/amountA, tokenB.symbol + "/" + tokenA.symbol)
     }
   }
@@ -238,8 +238,8 @@ const AddLiquidity = ({ roundBalance, setAddLiquidity, chainId, connectWallet, a
       { amountA ? 
         <div className="flex-col w-80 z-0 bg-white rounded-b-xl">
           <div className="flex justify-between mt-4">
-            <p className="mx-4 font-semibold text-gray-600">{ratioAB()}</p>
-            <p className="mx-4 font-semibold text-gray-600">{ratioBA()}</p>
+            <p className="mx-4 text-gray-600">{ratioAB()}</p>
+            <p className="mx-4 text-gray-600">{ratioBA()}</p>
           </div>
           <hr className="mt-2 mx-4 border-gray-300"/>
           <div className="flex justify-between mt-2 mb-3">
