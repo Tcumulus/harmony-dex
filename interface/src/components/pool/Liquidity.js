@@ -1,8 +1,8 @@
 import React, { useContext } from "react"
 import { useCollectionData } from "react-firebase-hooks/firestore"
-import { firestore } from "../firebase/config"
+import { firestore } from "../../firebase/config"
 
-import { Context } from "./App"
+import { Context } from "../App"
 import Pair from "./Pair"
 
 const Liquidity = ({ setAddLiquidity, setCreatePool, roundBalance }) => {

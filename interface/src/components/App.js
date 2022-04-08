@@ -1,8 +1,8 @@
 import React, { useState, createContext } from "react"
 import { ethers } from "ethers"
 
-import Swap from "./Swap"
-import Pool from "./Pool"
+import Swap from "./swap/Swap"
+import Pool from "./pool/Pool"
 import Header from "./Header"
 
 export const Context = createContext(null)

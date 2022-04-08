@@ -1,11 +1,12 @@
 import React, { useState, useContext, useEffect } from "react"
 import { ethers } from "ethers"
-import arrowGray from "../images/arrowGray.png"
-import arrowWhite from "../images/arrowWhite.png"
-import cross from "../images/cross.png"
-import ChooseToken from "./ChooseToken"
-import { Context } from "./App"
-import { getBalanceABI } from "../abis"
+import arrowGray from "../../images/arrowGray.png"
+import arrowWhite from "../../images/arrowWhite.png"
+import cross from "../../images/cross.png"
+
+import ChooseToken from "../general/ChooseToken"
+import { Context } from "../App"
+import { getBalanceABI } from "../../abis"
 
 const CreatePool = ({ roundBalance, setCreatePool, chainId, connectWallet }) => {
   const [amountA, setAmountA] = useState("")

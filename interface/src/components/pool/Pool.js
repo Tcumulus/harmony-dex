@@ -1,10 +1,10 @@
 import React, { useState, useContext } from "react"
-import { firestore } from "../firebase/config"
+import { firestore } from "../../firebase/config"
 
 import Liquidity from "./Liquidity"
 import AddLiquidity from "./AddLiquidity"
 import CreatePool from "./CreatePool"
-import { Context } from "./App"
+import { Context } from "../App"
 
 const Pool = ({ roundBalance, chainId, connectWallet }) => {
   const [addLiquidity, setAddLiquidity] = useState(false)

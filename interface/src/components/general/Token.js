@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react"
-import { Context } from "./App"
+import { Context } from "../App"
 
 const Token = ({ token, roundBalance, setToken, setChoose, getBalance, tokenA, tokenB }) => {
   const { tokenAddress, symbol, decimals, name } = token

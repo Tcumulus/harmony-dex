@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { useCollectionData } from "react-firebase-hooks/firestore"
-import { firestore } from "../firebase/config"
+import { firestore } from "../../firebase/config.js"
 import Token from "./Token"
 
 const ChooseToken = ({ setChoose, roundBalance, setToken, getBalance, tokenA, tokenB }) => {

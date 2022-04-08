@@ -1,6 +1,6 @@
 import react, { useState } from "react"
-import arrow from "../images/arrow.png"
-import crossBlue from "../images/crossBlue.png"
+import arrow from "../../images/arrow.png"
+import crossBlue from "../../images/crossBlue.png"
 
 const Pair = ({ pair, setAddLiquidity, roundBalance }) => {
   const [manage, setManage] = useState(false)
